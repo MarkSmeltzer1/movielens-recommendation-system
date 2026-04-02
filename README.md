@@ -214,6 +214,39 @@ The **Random Forest model** achieved the lowest RMSE and was selected as the cha
 
 ---
 
+## Screenshots
+
+### Champion Model Selection (MLflow)
+![Champion Table](docs/Champion%20SS/Champion%20Model%20Table.png)
+
+![Model Registered](docs/Champion%20SS/Champion%20Registered.png)
+
+![Model Version](docs/Champion%20SS/Champion%20Version.png)
+
+---
+
+### FastAPI Predictions (Model Inference)
+
+#### XGBoost
+![XGBoost Request](docs/FastAPI%20Test/xgBoost_post_part1.png)
+![XGBoost Response](docs/FastAPI%20Test/xgBoost_response_part2.png)
+
+#### Random Forest
+![RF Request](docs/FastAPI%20Test/randomForest_post_part1.png)
+![RF Response](docs/FastAPI%20Test/randomForest_response_part2.png)
+
+#### GLM
+![GLM Request](docs/FastAPI%20Test/glm_post_part1.png)
+![GLM Response](docs/FastAPI%20Test/glm_response_part2.png)
+
+---
+
+### Model Drift Analysis
+![Drift Summary](docs/Model%20Drift%20Analysis/model_drift_summary_report_0.png)
+![Drift Detail](docs/Model%20Drift%20Analysis/model_drift_summary_report_userId_details.png)
+
+---
+
 ### Key Takeaways
 
 * Tree-based ensemble models (Random Forest, XGBoost) significantly outperformed linear models
