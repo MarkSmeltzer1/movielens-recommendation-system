@@ -1,152 +1,215 @@
-# MovieLens Rating Prediction Project
+# MovieLens Recommendation System
 
-## Project Overview
-This project builds a machine learning pipeline to predict movie ratings (1-5 stars) using the MovieLens 1M dataset. It features an automated AWS cloud workflow with **MLflow** for experiment tracking and **FastAPI** for model serving.
+## Overview
 
----
+This project builds an end-to-end machine learning pipeline to predict user movie ratings (1–5 stars) using the MovieLens 1M dataset.
 
-## 🚀 1. Accessing Services (Cloud)
-If the project is deployed to AWS, here is how you interact with it.
+The system demonstrates a full production-style workflow including:
 
-### Service URLs
-Replace `<PUBLIC_IP>` with your EC2 instance IP (e.g., `100.48.xx.xx`).
+* Data processing
+* Model training and evaluation
+* Experiment tracking
+* Model registry
+* API-based model serving
+* Cloud deployment using AWS
 
-| Service | Port | URL | Description |
-| :--- | :--- | :--- | :--- |
-| **MLflow UI** | 5000 | `http://<PUBLIC_IP>:5000` | View Experiments, Metrics, and Model Registry. |
-| **API Docs** | 8000 | `http://<Public-IP>:8000/docs` | Interactive Swagger UI to test predictions. |
-
-### 🔍 How to make Predictions (Swagger UI)
-1.  Go to the **API Docs** URL.
-2.  Choose the specific endpoint for the model you want to use:
-    *   `POST /predict/xgboost` (Recommended)
-    *   `POST /predict/glm`
-    *   `POST /predict/randomforest`
-3.  Click **Try it out** -> **Execute**.
+The goal of this project is to showcase a real-world MLOps pipeline rather than just a single model.
 
 ---
 
-## ☁️ 2. AWS Cloud Deployment (Production)
-This section is for DevOps/Admins deploying the infrastructure.
+## Key Features
 
-### Cost Management
-You can **Stop** the instance when not in use to save money.
+* Predicts movie ratings using structured user and movie data
+* Trains and compares multiple machine learning models
+* Tracks experiments, metrics, and parameters using MLflow
+* Registers and versions models in the MLflow Model Registry
+* Serves predictions through FastAPI endpoints
+* Deploys infrastructure using Terraform on AWS
+* Supports both local and cloud-based workflows
 
-#### Option A: AWS Console
-*   **Stop**: AWS Console -> Instance State -> Stop.
-*   **Start**: AWS Console -> Instance State -> Start.
+---
 
-#### Option B: AWS CLI
-Prerequisite: You need the Instance ID.
+## Tech Stack
 
-**Find Instance ID (Running only):**
-```bash
-aws ec2 describe-instances \
-  --filters "Name=tag:Name,Values=MovieLens-ML-Server" "Name=instance-state-name,Values=running" \
-  --query "Reservations[*].Instances[*].InstanceId" \
-  --output text
+* Python
+* Pandas, NumPy
+* Scikit-learn, H2O, XGBoost
+* MLflow
+* FastAPI
+* Terraform
+* AWS (EC2, S3)
+* uv (Python package manager)
+
+---
+
+## Project Structure
+
+```
+movielens-recommendation-system/
+├── docs/                  # project outputs, screenshots, drift analysis
+├── infra/                 # Terraform configuration for AWS
+├── scripts/               # pipeline and post-training scripts
+├── src/
+│   ├── app/               # FastAPI application
+│   ├── data/              # data handling modules
+│   └── models/            # model training scripts
+├── data/                  # raw and processed data (ignored in Git)
+├── README.md
+├── pyproject.toml
+├── uv.lock
+└── .gitignore
 ```
 
-```bash
-# 1. Stop Instance
-aws ec2 stop-instances --instance-ids <INSTANCE_ID>
+---
 
-# 2. Start Instance
-aws ec2 start-instances --instance-ids <INSTANCE_ID>
+## Machine Learning Workflow
 
-# 3. Get New Public IP (After starting)
-aws ec2 describe-instances \
-  --instance-ids <INSTANCE_ID> \
-  --query 'Reservations[0].Instances[0].PublicIpAddress' \
-  --output text
-
-# 4. Check Status (Table View) 
-aws ec2 describe-instances \
-  --filters "Name=tag:Name,Values=MovieLens-ML-Server" \
-  --query "Reservations[*].Instances[*].{ID:InstanceId,State:State.Name,PublicIP:PublicIpAddress}" \
-  --output table
-```
-
-**Note**: When you start the instance, MLflow and FastAPI start **automatically**. Just SSH in with the new IP!
-
-
-### Maintenance & Updates
-Terraform installs everything **once** at creation. To **update** the running server with your latest code:
-
-1.  **SSH into the Server**:
-    ```bash
-    ssh -i ~/.ssh/mlflow-key.pem ubuntu@<PUBLIC_IP>
-    ```
-2.  **Pull Latest Changes**:
-    ```bash
-    cd movielens-rating-prediction
-    git pull
-    /home/ubuntu/.local/bin/uv sync
-    # Restart API to apply changes
-    systemctl restart fastapi
-    ```
-3.  **Check Services**:
-    ```bash
-    systemctl status fastapi
-    systemctl status mlflow
-    ```
-
-### Run MLOps Pipeline (Remote)
-Execute these scripts on the server to train and update models:
-1.  **Train**: `uv run python -m src.models.train_xgboost`
-2.  **Compare**: `uv run scripts/post_training/compare_models.py`
-3.  **Register**: `uv run scripts/post_training/register_model.py`
+1. Raw MovieLens data is collected and prepared
+2. Data is split into train, validation, and test sets
+3. Multiple models are trained
+4. Results are logged to MLflow
+5. Models are compared and evaluated
+6. The best model is registered as the champion
+7. The model is deployed through FastAPI
+8. Infrastructure is managed using Terraform on AWS
 
 ---
 
-## 💻 3. Local Development
-This section is for Developers attempting to run the code on their machine.
+## Models Used
+
+* XGBoost (Primary model)
+* Generalized Linear Model (ElasticNet)
+* Distributed Random Forest (H2O)
+* H2O AutoML workflows
+
+Models are compared using RMSE, MAE, and other evaluation metrics.
+
+---
+
+## Local Development
 
 ### Prerequisites
-*   **Python 3.10+**
-*   **uv** (Package Manager)
-*   **AWS CLI** (For data access)
 
-### Installation
-1.  **Install uv**:
-    ```bash
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-    ```
-2.  **Install AWS CLI**:
-    ```bash
-    # macOS
-    brew install awscli
-    # Linux
-    sudo apt install awscli
-    ```
-3.  **Sync Dependencies**:
-    ```bash
-    uv sync
-    ```
+* Python 3.10+
+* uv package manager
+* AWS CLI (optional, for cloud data access)
 
-### Data Pipeline
-Run the orchestration script to process the data:
+### Install Dependencies
+
+```bash
+uv sync
+```
+
+### Run Data Pipeline
+
 ```bash
 uv run scripts/run_pipeline.py
 ```
-*   **Input**: `data/rawData/merged_movielens.csv` (Will download from S3 if missing and AWS creds are set).
-*   **Output**: `data/processed/{train,validate,test}.csv`.
 
+### Train Models
 
-### Training Models Locally
-You can train models on your laptop (logs to local MLflow or Cloud if URI is set):
 ```bash
-# Train XGBoost
 uv run python -m src.models.train_xgboost
-
-# Train ElasticNet
 uv run python -m src.models.train_glm
+uv run python -m src.models.train_drf
+uv run python -m src.models.train_h2o
 ```
 
-### Experiment Tracking (Local)
-View results without the cloud. Local runs are stored in `./mlruns` to **keep production clean** and allow offline development.
+### Run MLflow Locally
 
 ```bash
 uv run mlflow ui
 ```
-Open `http://127.0.0.1:5000`.
+
+Open:
+
+```
+http://127.0.0.1:5000
+```
+
+### Run FastAPI Locally
+
+```bash
+uv run uvicorn src.app.main:app --reload
+```
+
+Open:
+
+```
+http://127.0.0.1:8000/docs
+```
+
+---
+
+## AWS Deployment
+
+This project can be deployed to AWS using Terraform (see `infra/`).
+
+Once deployed, services include:
+
+* MLflow UI (port 5000)
+* FastAPI API (port 8000)
+
+Access via:
+
+```
+http://<PUBLIC_IP>:5000
+http://<PUBLIC_IP>:8000/docs
+```
+
+---
+
+## Maintenance and Updates
+
+To update a running EC2 instance:
+
+```bash
+ssh -i ~/.ssh/mlflow-key.pem ubuntu@<PUBLIC_IP>
+
+cd movielens-rating-prediction
+git pull
+/home/ubuntu/.local/bin/uv sync
+
+systemctl restart fastapi
+systemctl restart mlflow
+```
+
+Check service status:
+
+```bash
+systemctl status fastapi
+systemctl status mlflow
+```
+
+---
+
+## Example Pipeline Commands
+
+```bash
+uv run python -m src.models.train_xgboost
+uv run scripts/post_training/compare_models.py
+uv run scripts/post_training/register_model.py
+```
+
+---
+
+## Notes
+
+* Raw datasets, MLflow runs, and large artifacts are excluded using `.gitignore`
+* This repository focuses on code, pipeline design, and deployment
+
+---
+
+## Future Improvements
+
+* CI/CD pipeline for automated deployment
+* Model monitoring and drift detection alerts
+* Batch prediction endpoints
+* Frontend dashboard for model interaction
+
+---
+
+## Author
+
+**Mark Smeltzer**
+MS Data Science, Rowan University
