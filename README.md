@@ -200,6 +200,29 @@ uv run scripts/post_training/register_model.py
 
 ---
 
+## Results
+
+The models were evaluated on the test set using RMSE, MAE, and R².
+
+| Model                        | RMSE       | MAE    | R²     |
+| ---------------------------- | ---------- | ------ | ------ |
+| **Random Forest** (Champion) | **1.0423** | 0.8483 | 0.1269 |
+| XGBoost                      | 1.0536     | 0.8465 | 0.1080 |
+| GLM (ElasticNet)             | 1.1061     | 0.9153 | 0.0168 |
+
+The **Random Forest model** achieved the lowest RMSE and was selected as the champion model for deployment.
+
+---
+
+### Key Takeaways
+
+* Tree-based ensemble models (Random Forest, XGBoost) significantly outperformed linear models
+* Random Forest provided the best overall balance of error metrics
+* MLflow enabled systematic comparison across models and experiments
+* The pipeline supports reproducible model training and evaluation
+
+---
+
 ## Future Improvements
 
 * CI/CD pipeline for automated deployment
