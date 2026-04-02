@@ -1,0 +1,26 @@
+
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Local Data & Docs
+/data/
+.DS_Store
+
+# ML Artifacts
+/models/
+mlruns/
+mlflow.db
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+comparison_table.csv
